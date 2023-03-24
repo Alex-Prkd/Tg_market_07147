@@ -1,72 +1,58 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
-
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 ADMIN_ID = 610280722
-PASSWORD_ADMIN = "padmin"
 
 
-__all__ = ["ADMIN_ID", "PASSWORD_ADMIN", "PasswordAdmin",
-           "AdminMenu", "EditInfo", "SelectRole"]
-
-
-class PasswordAdmin(StatesGroup):
-    password = State()
+__all__ = ["ADMIN_ID", "AdminMenu", "SelectRole", "EditInfo"]
 
 
 class AdminMenu:
-    kb = [
-        [KeyboardButton(text="Список магазинов")],
-        [KeyboardButton(text="Список покупателей")],
-        [KeyboardButton(text="Добавить локацию")],
-        [KeyboardButton(text="Удалить локацию")],
-        [KeyboardButton(text="Изменить информацию")],
-        [KeyboardButton(text="ЧС")],
-        [KeyboardButton(text="Выйти")]
-    ]
-
-    menu = ReplyKeyboardMarkup(keyboard=kb,
-                               resize_keyboard=True,
-                               one_time_keyboard=True
-                               )
+    def __init__(self):
+        self.admin_menu = InlineKeyboardBuilder()
+        self.admin_menu.row(InlineKeyboardButton(text="Добавить продавца",
+                                                 callback_data="add_seller"))
+        self.admin_menu.row(InlineKeyboardButton(text="Список магазинов",
+                                                 callback_data="get_shops"))
+        self.admin_menu.row(InlineKeyboardButton(text="Список покупателей",
+                                                 callback_data="get_costumers"))
+        self.admin_menu.row(InlineKeyboardButton(text="Изменить иформацию",
+                                                 callback_data="edit_info_bot"))
+        self.admin_menu.row(InlineKeyboardButton(text="ЧС",
+                                                 callback_data="blacklist"))
+        self.admin_menu.row(InlineKeyboardButton(text="Выйти",
+                                                 callback_data="home"))
 
 
 class SelectRole:
-    kb = [
-        [KeyboardButton(text="О покупателе")],
-        [KeyboardButton(text="О продавце")],
-        [KeyboardButton(text="Назад")]
-    ]
-    costumer_or_seller = ReplyKeyboardMarkup(keyboard=kb,
-                                             resize_keyboard=True,
-                                             one_time_keyboard=True
-                                             )
+    def __init__(self):
+        self.role = InlineKeyboardBuilder()
+        self.role.row(InlineKeyboardButton(text="Поменять информацию продавца",
+                                           callback_data="edit_info_costumer"))
+        self.role.row(InlineKeyboardButton(text="Поменять информацию покупателя",
+                                           callback_data="edit_info_seller"))
+        self.role.row(InlineKeyboardButton(text="Назад",
+                                           callback_data="back_to_admin_menu"))
 
 
 class EditInfo:
     def __init__(self, role):
-        self.keyboards = InlineKeyboardMarkup()
-        if role == "О покупателе":
-            about = InlineKeyboardButton(text="Почему мы?",
-                                         callback_data="edit_about_costumer"
-                                         )
-            instruction = InlineKeyboardButton(text='Инструкция',
-                                               callback_data="edit_instruction_costumer"
-                                               )
-            regulations_or_warning = InlineKeyboardButton(text="Правила",
-                                                          callback_data="edit_regulations_costumer"
-                                                          )
-        else:
-            about = InlineKeyboardButton(text="Почему мы?",
-                                         callback_data="edit_about_seller"
-                                         )
-            instruction = InlineKeyboardButton(text='Инструкция',
-                                               callback_data="edit_instruction_seller"
-                                               )
-            regulations_or_warning = InlineKeyboardButton(text="Правила",
-                                                          callback_data="edit_regulations_seller"
-                                                          )
+        self.edit = InlineKeyboardBuilder()
+        if role == "edit_info_costumer":
+            self.edit.row(InlineKeyboardButton(text="Почему мы?",
+                                               callback_data="edit_about_costumer"))
+            self.edit.row(InlineKeyboardButton(text='Инструкция',
+                                               callback_data="edit_instruction_costumer"))
+            self.edit.row(InlineKeyboardButton(text="Правила",
+                                               callback_data="edit_regulations_costumer"))
+        elif role == "edit_info_seller":
+            self.edit.add(InlineKeyboardButton(text="Почему мы?",
+                                               callback_data="edit_about_seller"))
+            self.edit.add(InlineKeyboardButton(text='Инструкция',
+                                               callback_data="edit_instruction_seller"))
 
-        self.keyboards.add(about)
-        self.keyboards.add(instruction)
-        self.keyboards.add(regulations_or_warning)
+            self.edit.add(InlineKeyboardButton(text="Правила",
+                                               callback_data="edit_regulations_seller"))
+        self.edit.row(InlineKeyboardButton(text="Назад",
+                                           callback_data="back_to_admin_menu"))

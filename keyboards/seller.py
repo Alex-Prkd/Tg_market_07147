@@ -1,63 +1,46 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import InlineKeyboardButton
 
-__all__ = ["InformationSeller", "SettingMarket", "RegisterNameMarket"]
+__all__ = ["InformationSeller"]
+
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 class InformationSeller:
     def __init__(self):
-        self.keyboards = InlineKeyboardMarkup()
-        about = InlineKeyboardButton(text="Почему мы?",
-                                     callback_data='about_seller'
-                                     )
-        instruction = InlineKeyboardButton(text='Инструкция',
-                                           callback_data="instruction_seller"
-                                           )
-        regulations_or_warning = InlineKeyboardButton(text="Правила",
-                                                          callback_data="regulations_seller"
-                                                      )
-        acquainted = InlineKeyboardButton(text="Ознакомлен",
-                                              callback_data="contact_with_admin"
-                                          )
-        self.keyboards.add(about)
-        self.keyboards.add(instruction)
-        self.keyboards.add(regulations_or_warning)
-        self.keyboards.add(acquainted)
+        self.keyboards = InlineKeyboardBuilder()
+        self.keyboards.row(InlineKeyboardButton(text="Почему мы?",
+                                                callback_data='about_seller'
+                                                ))
+        self.keyboards.row(InlineKeyboardButton(text='Инструкция',
+                                                callback_data="instruction_seller"
+                                                ))
+        self.keyboards.row(InlineKeyboardButton(text="Правила",
+                                                callback_data="regulations_seller"
+                                                ))
+        self.keyboards.row(InlineKeyboardButton(text="Ознакомлен",
+                                                callback_data="contact_with_admin"
+                                                ))
+        self.keyboards.row(InlineKeyboardButton(text="Назад",
+                                                callback_data="home"))
 
 
 class SettingMarket:
+    """ Эта клавиатура будет работать,
+     когда подкину бд и создам магазин т.к. некуда реализовывать"""
+
     def __init__(self):
-        # test_list = ["🌄 Фото", "🔠 Название", "ℹ Описание",
-        #              "⚠ Товар", "🌎 Местоположение", "⬅ Назад",
-        #              "➕ Добавить админа", "➖ Удалить админа"]
-        list_settings = [
-            [KeyboardButton(text="🌄 Фото")],
-            [KeyboardButton(text="🔠 Название")],
-            [KeyboardButton(text="ℹ Описание")],
-            [KeyboardButton(text="⚠ Товар")],
-            [KeyboardButton(text="🌎 Местоположение")],
-            [KeyboardButton(text="⬅ Назад")],
-            [KeyboardButton(text="➕ Добавить админа")],
-            [KeyboardButton(text="➖ Удалить админа")]
-        ]
-        # list_settings = []
-        # for i in test_list:
-        #     list_settings.append(KeyboardButton(text=i))
-        self.settings = ReplyKeyboardMarkup(list_settings,
-                                            resize_keyboard=True,
-                                            one_time_keyboard=True)
-
-
-class RegisterNameMarket(StatesGroup):
-    title = State()
-
-
-    @staticmethod
-    def confirmation_name():
-        confirmation = InlineKeyboardMarkup()
-        accept = InlineKeyboardButton(text="Да", callback_data="accept_name")
-        cancel = InlineKeyboardButton(text="Нет", callback_data="acquainted_seller")
-
-        confirmation.add(accept)
-        confirmation.add(cancel)
-        return confirmation
+        self.settings_market = InlineKeyboardBuilder()
+        self.settings_market.row(InlineKeyboardButton(text="Изменить фото",
+                                                      callback_data="edit_photo"))
+        self.settings_market.row(InlineKeyboardButton(text="Поменять название",
+                                                      callback_data="edit_title"))
+        self.settings_market.row(InlineKeyboardButton(text="Изменить описание",
+                                                      callback_data="edit_description"))
+        self.settings_market.row(InlineKeyboardButton(text="Обновить товар",
+                                                      callback_data="edit_product"))
+        self.settings_market.row(InlineKeyboardButton(text="Изменить местоположение",
+                                                      callback_data="edit_location"))
+        self.settings_market.row(InlineKeyboardButton(text="Добавить админа",
+                                                      callback_data="add_admin"))
+        self.settings_market.row(InlineKeyboardButton(text="Удалить админа",
+                                                      callback_data="delete_admin"))
