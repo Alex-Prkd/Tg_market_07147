@@ -1,10 +1,12 @@
 from aiogram import types
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.commands.reader import get_information_for_seller
 from keyboards import InformationSeller, ButtonBackInformationSeller
 
 
 # Информация для продавца
-async def get_info_seller(callback_query: types.CallbackQuery):
+async def get_info_seller(callback_query: types.CallbackQuery, session: AsyncSession):
     # Ознакомлен
     if callback_query.data == "contact_with_admin":
         await callback_query.message.answer(text=f"Связь с админом: @alex_prkd")
@@ -14,7 +16,7 @@ async def get_info_seller(callback_query: types.CallbackQuery):
         а не в начале файла?
         """
         btn_back = ButtonBackInformationSeller().button_back
-        # Поиск информации по бд
+        await get_information_for_seller(session, callback_query.data)
         await callback_query.message.edit_text(text=f"Инофрмация {callback_query.data}",
                                                reply_markup=btn_back.as_markup())
 
@@ -24,7 +26,7 @@ async def get_my_shop(callback_query: types.CallbackQuery):
     """Если нет магазина в бд"""
     await callback_query.message.edit_text(text="У вас нет магазина. Для регистрации ознакомьтесь.",
                                            reply_markup=info_seller.as_markup())
-    """Добавить меню, если если есть магазин"""
+    """Добавить меню, после валидации роли"""
 
 
 async def edit_photo(callback_query: types.CallbackQuery):

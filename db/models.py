@@ -1,32 +1,19 @@
 import datetime
 
-from sqlalchemy import Column, Integer, String, Float, Text, Boolean, DateTime, ForeignKey, Table
-from sqlalchemy.orm import declarative_base, relationship
-
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
 
-__all__ = [
-    "SuperAdmin", "Market", "Categories", "Firm", "Base",
-    "Products", "User", "DescriptionSeller", "DescriptionCostumer"
-    ]
-
-
-class SuperAdmin(Base):
+class AdminBot(Base):
     """ Пароли/Названия не должны превышать 32 символов (сообщить!)"""
     __tablename__ = "super_admin"
 
-    id = Column(Integer, primary_key=True)      # можно ли в id'шку прокинуть id из ТГ?
-    id_telegram = Column(Integer, unique=True)
-    password = Column(String(32))
+    id_telegram = Column(Integer, unique=True, primary_key=True, nullable=False)
+    photo_bot = Column(String)
 
-
-
-market_users_association_table = Table("market_users_table", Base.metadata,
-                                       Column("market_id", ForeignKey("market_table.id"), primary_key=True),
-                                       Column("user_id", ForeignKey("user_table.id"), primary_key=True)
-                                       )
 
 
 class Market(Base):
@@ -38,15 +25,12 @@ class Market(Base):
     rating = Column(Float)
     location = Column(String(32))
     description = Column(Text)
-    subscription = Column(Boolean, default=True)
     datetime_subscription = Column(DateTime)    # Уточнить про Datetime
     datetime_registration = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    users_costumers = relationship("User", backref="market_table")
 
-    users_costumers = relationship("User", secondary=market_users_association_table,
-                                   back_populates="markets"
-                                   )
-
-    categories = relationship("Categories", back_populates="market")
+    categories = relationship("Categories", backref="market_table")
 
 
 class Categories(Base):
@@ -56,9 +40,8 @@ class Categories(Base):
     category = Column(String(32))
 
     market_id = Column(Integer, ForeignKey("market_table.id"))
-    market = relationship("Market", back_populates="categories")
 
-    firms = relationship("Firm", back_populates="categories")
+    firms = relationship("Firm", backref="categories_table")
 
 
 class Firm(Base):
@@ -68,47 +51,53 @@ class Firm(Base):
     title = Column(String(32))
 
     category_id = Column(Integer, ForeignKey("categories_table.id"))
-    categories = relationship("Categories", back_populates="firms")
 
-    products = relationship("Products", back_populates="firm")
+    products = relationship("Products", backref="firm_table")
 
 
 class Products(Base):
     __tablename__ = "product_table"
 
     id = Column(Integer, primary_key=True)
-    title = Column(String)
+    title = Column(String(32))
+    amount_20mg = Column(Integer)
+    amount_45mg = Column(Integer)
+    price_for_1 = Column(Integer)
+    price_for_10 = Column(Integer)
+    price_for_25 = Column(Integer)
+    price_for_100 = Column(Integer)
     firm_id = Column(Integer, ForeignKey("firm_table.id"))
-    firm = relationship("Firm", back_populates="products")
 
 
 class User(Base):
     __tablename__ = "user_table"
 
-    id = Column(Integer, primary_key=True)
-    username = Column(String)
-    id_telegram = Column(Integer, unique=True)
+    id_telegram = Column(Integer, primary_key=True, unique=True, nullable=False)
+    username = Column(String(32))
     like = Column(Integer, default=0)
     dislike = Column(Integer, default=0)
-    markets = relationship("Market", secondary=market_users_association_table,
-                           back_populates="users_costumers")
+    role = Column(String(16), default="costumer")
+    blacklist = Column(Boolean, default=0)
+
+    market_id = Column(Integer, ForeignKey("market_table.id"))
 
 
-class DescriptionSeller(Base):
+class Description(Base):
     __tablename__ = "description_seller"
 
     id = Column(Integer, primary_key=True)
     about_seller = Column(Text)
     instruction_seller = Column(Text)
     regulations_seller = Column(Text)
-    acquainted_seller = Column(String(16))
-
-
-class DescriptionCostumer(Base):
-    __tablename__ = "description_costumer"
-
-    id = Column(Integer, primary_key=True)
     about_costumer = Column(Text)
     instruction_costumer = Column(Text)
     regulations_costumer = Column(Text)
-    acquainted_costumer = Column(String(16))
+
+
+class Blacklist(Base):
+    __tablename__ = "blacklist"
+
+    id_telegram = Column(Integer, primary_key=True, unique=True, nullable=False)
+    username = Column(String(32))
+    role = Column(String(16))
+
